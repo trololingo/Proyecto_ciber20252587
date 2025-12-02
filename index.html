@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Proyecto de Video - Ciberseguridad | Ing. John Marcos Pérez Cáceres</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Proyecto de video de ciberseguridad: uso de comandos básicos en Linux, RED HAWK, WHOIS y análisis de dominios. Realizado por Ing. John Marcos Pérez Cáceres.">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg-main: #020617;
+      --bg-alt: #020617;
+      --bg-card: rgba(15, 23, 42, 0.95);
+      --bg-chip: rgba(15, 23, 42, 0.9);
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.16);
+      --accent-2: #22c55e;
+      --text-main: #e5e7eb;
+      --text-muted: #9ca3af;
+      --border-subtle: rgba(148, 163, 184, 0.35);
+      --shadow-soft: 0 20px 55px rgba(15, 23, 42, 0.9);
+      --radius-xl: 1.5rem;
+      --radius-lg: 1.1rem;
+      --radius-pill: 999px;
+      --transition-fast: 0.22s ease-out;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(56, 189, 248, 0.12), transparent 55%),
+        radial-gradient(circle at 100% 0%, rgba(59, 130, 246, 0.12), transparent 55%),
+        radial-gradient(circle at 100% 100%, rgba(45, 212, 191, 0.1), transparent 55%),
+        var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    ::selection {
+      background: rgba(56, 189, 248, 0.3);
+      color: #f9fafb;
+    }
+
+    .container {
+      width: min(1120px, 100% - 3.5rem);
+      margin: 0 auto;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(18px);
+      background: linear-gradient(to bottom, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.85));
+      border-bottom: 1px solid rgba(148, 163, 184, 0.28);
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.9rem 0;
+      gap: 1.5rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .brand-logo-wrap {
+      position: relative;
+      width: 42px;
+      height: 42px;
+      padding: 3px;
+      border-radius: 18px;
+      background: radial-gradient(circle at 0 0, rgba(56, 189, 248, 0.9), transparent 55%);
+      box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.35);
+    }
+
+    .brand-logo-wrap::after {
+      content: "";
+      position: absolute;
+      inset: 4px;
+      border-radius: inherit;
+      border: 1px solid rgba(15, 23, 42, 0.85);
+    }
+
+    .brand-logo-wrap img {
+      width: 100%;
+      height: 100%;
+      border-radius: 14px;
+      object-fit: contain;
+      position: relative;
+      z-index: 1;
+      background: #0b1120;
+      padding: 4px;
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+    }
+
+    .brand-title {
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+    }
+
+    .brand-subtitle {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    nav {
+      display: flex;
+      gap: 1.2rem;
+      font-size: 0.8rem;
+    }
+
+    nav a {
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 0.35rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      transition: color var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast), transform 0.15s ease-out;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    nav a span.dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.6);
+    }
+
+    nav a:hover {
+      color: #f9fafb;
+      border-color: rgba(148, 163, 184, 0.6);
+      background: rgba(15, 23, 42, 0.9);
+      transform: translateY(-1px);
+    }
+
+    nav a.active {
+      color: #f9fafb;
+      border-color: rgba(56, 189, 248, 0.5);
+      background: radial-gradient(circle at 0 0, rgba(56, 189, 248, 0.25), transparent 55%);
+    }
+
+    /* HERO */
+
+    main {
+      padding-bottom: 4rem;
+    }
+
+    .hero {
+      padding: 3.5rem 0 3rem;
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: 3rem;
+      align-items: center;
+    }
+
+    .hero-left {
+      position: relative;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.25rem 0.9rem 0.25rem 0.3rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.9);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 1.1rem;
+    }
+
+    .eyebrow-pill {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 10%, #4ade80, #22c55e);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.78rem;
+      color: #022c22;
+      font-weight: 700;
+      box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.95), 0 10px 25px rgba(16, 185, 129, 0.6);
+    }
+
+    .hero-title {
+      font-size: clamp(2.1rem, 3.2vw, 2.8rem);
+      line-height: 1.1;
+      margin: 0 0 0.8rem;
+      letter-spacing: 0.03em;
+    }
+
+    .hero-title span.accent {
+      background: linear-gradient(120deg, #38bdf8, #22c55e);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: 0.98rem;
+      color: var(--text-muted);
+      max-width: 33rem;
+    }
+
+    .hero-tag-row {
+      margin-top: 1.4rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      border-radius: var(--radius-pill);
+      padding: 0.3rem 0.9rem;
+      font-size: 0.78rem;
+      background: var(--bg-chip);
+      border: 1px solid rgba(148, 163, 184, 0.55);
+    }
+
+    .chip-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.18);
+    }
+
+    .chip-label-muted {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .chip-label-strong {
+      font-weight: 600;
+    }
+
+    .hero-actions {
+      margin-top: 2.1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .btn-primary,
+    .btn-ghost {
+      border-radius: 999px;
+      padding: 0.7rem 1.4rem;
+      font-size: 0.9rem;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background var(--transition-fast), transform 0.16s ease-out, box-shadow var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: radial-gradient(circle at 0 0, #38bdf8, #0ea5e9);
+      color: #0b1120;
+      font-weight: 600;
+      box-shadow: 0 18px 45px rgba(8, 47, 73, 0.9);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 24px 60px rgba(8, 47, 73, 0.95);
+    }
+
+    .btn-ghost {
+      background: rgba(15, 23, 42, 0.7);
+      border-color: rgba(148, 163, 184, 0.5);
+      color: var(--text-muted);
+    }
+
+    .btn-ghost:hover {
+      background: rgba(15, 23, 42, 0.95);
+      color: #e5e7eb;
+      transform: translateY(-1px);
+    }
+
+    .btn-icon-circle {
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      border: 1px solid rgba(15, 23, 42, 0.65);
+      background: rgba(15, 23, 42, 0.2);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+    }
+
+    .hero-meta {
+      margin-top: 1.5rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.7rem;
+    }
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .meta-label {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.68rem;
+      color: rgba(148, 163, 184, 0.85);
+    }
+
+    .meta-value {
+      font-weight: 500;
+    }
+
+    /* HERO RIGHT / VIDEO CARD */
+
+    .hero-right {
+      position: relative;
+    }
+
+    .video-card {
+      position: relative;
+      border-radius: 24px;
+      padding: 0.8rem;
+      background:
+        radial-gradient(circle at 0 0, rgba(59, 130, 246, 0.22), transparent 55%),
+        linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.95));
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      overflow: hidden;
+    }
+
+    .video-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.35rem 0.6rem 0.5rem;
+      border-radius: 18px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      margin-bottom: 0.55rem;
+      font-size: 0.78rem;
+    }
+
+    .video-header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .video-dots {
+      display: inline-flex;
+      gap: 0.22rem;
+      margin-right: 0.25rem;
+    }
+
+    .video-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ef4444;
+    }
+
+    .video-dot:nth-child(2) {
+      background: #facc15;
+    }
+
+    .video-dot:nth-child(3) {
+      background: #22c55e;
+    }
+
+    .video-badge {
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      background: rgba(22, 163, 74, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.75);
+      color: #bbf7d0;
+      font-weight: 600;
+      display: inline-flex;
+      gap: 0.35rem;
+      align-items: center;
+    }
+
+    .video-badge-icon {
+      font-size: 0.8rem;
+    }
+
+    .video-body {
+      border-radius: 20px;
+      background: radial-gradient(circle at 0 0, rgba(56, 189, 248, 0.28), transparent 60%);
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      padding: 0.55rem;
+    }
+
+    .video-frame {
+      position: relative;
+      border-radius: 18px;
+      overflow: hidden;
+      aspect-ratio: 16 / 9;
+      background: #020617;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.9);
+    }
+
+    .video-frame iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    .video-tag {
+      position: absolute;
+      bottom: 0.9rem;
+      left: 0.85rem;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text-muted);
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      display: inline-flex;
+      gap: 0.35rem;
+      align-items: center;
+    }
+
+    .video-tag-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #22c55e;
+    }
+
+    .video-glow {
+      position: absolute;
+      inset: 15% -15%;
+      background: radial-gradient(circle at 50% 100%, rgba(56, 189, 248, 0.18), transparent 65%);
+      pointer-events: none;
+      mix-blend-mode: screen;
+    }
+
+    /* SECTIONS */
+
+    section {
+      padding: 1rem 0 0;
+    }
+
+    .section-header {
+      margin-bottom: 1.8rem;
+    }
+
+    .section-kicker {
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-size: 0.68rem;
+      color: rgba(148, 163, 184, 0.9);
+      margin-bottom: 0.25rem;
+    }
+
+    .section-title {
+      margin: 0 0 0.3rem;
+      font-size: 1.35rem;
+    }
+
+    .section-subtitle {
+      margin: 0;
+      font-size: 0.92rem;
+      color: var(--text-muted);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: 1.75rem;
+      align-items: flex-start;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-subtle);
+      padding: 1.4rem 1.5rem;
+      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.85);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      opacity: 0.05;
+      background:
+        radial-gradient(circle at 0 0, #38bdf8, transparent 55%),
+        radial-gradient(circle at 100% 0, #22c55e, transparent 55%);
+      pointer-events: none;
+    }
+
+    .card h3 {
+      margin: 0 0 0.7rem;
+      font-size: 1.05rem;
+    }
+
+    .card p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin: 0.2rem 0;
+    }
+
+    .intro-highlight {
+      border-radius: var(--radius-lg);
+      padding: 0.7rem 0.85rem;
+      background: rgba(15, 23, 42, 0.86);
+      border: 1px dashed rgba(148, 163, 184, 0.65);
+      margin-top: 0.75rem;
+      font-size: 0.86rem;
+    }
+
+    .list-clean {
+      padding-left: 1rem;
+      margin: 0.4rem 0 0.2rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .list-clean li {
+      margin-bottom: 0.25rem;
+    }
+
+    /* STEPS / TIMELINE */
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.1rem;
+    }
+
+    .step {
+      position: relative;
+      padding: 1rem 1rem 1rem 1rem;
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: rgba(15, 23, 42, 0.96);
+      overflow: hidden;
+      font-size: 0.88rem;
+    }
+
+    .step::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      opacity: 0.07;
+      background: radial-gradient(circle at 0 0, rgba(56, 189, 248, 0.6), transparent 55%);
+      pointer-events: none;
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .step-number {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(56, 189, 248, 0.7);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #e0f2fe;
+      box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15);
+    }
+
+    .step-title {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .step-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: rgba(148, 163, 184, 0.85);
+      margin-bottom: 0.35rem;
+    }
+
+    .step-tag-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.7);
+    }
+
+    code,
+    pre {
+      font-family: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.78rem;
+    }
+
+    pre {
+      background: rgba(15, 23, 42, 0.95);
+      border-radius: 0.7rem;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid rgba(30, 64, 175, 0.7);
+      margin: 0.45rem 0 0.2rem;
+      overflow-x: auto;
+    }
+
+    /* REFLECTION */
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .pill {
+      padding: 0.3rem 0.7rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: rgba(15, 23, 42, 0.92);
+      color: var(--text-muted);
+    }
+
+    .pill strong {
+      color: #e5e7eb;
+      font-weight: 600;
+    }
+
+    .reflection-list {
+      padding-left: 1rem;
+      margin: 0.5rem 0 0;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .reflection-list li {
+      margin-bottom: 0.3rem;
+    }
+
+    /* FOOTER */
+
+    footer {
+      margin-top: 3rem;
+      padding: 1.5rem 0 2.2rem;
+      border-top: 1px solid rgba(148, 163, 184, 0.38);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .footer-inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .footer-credit-highlight {
+      color: #e5e7eb;
+      font-weight: 500;
+    }
+
+    .footer-tag {
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    /* ANIMATIONS */
+
+    [data-animate] {
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.55s ease-out, transform 0.55s ease-out;
+    }
+
+    [data-animate].in-view {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .hero,
+    .video-card {
+      animation: fadeInSoft 0.9s ease-out forwards;
+    }
+
+    @keyframes fadeInSoft {
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .floating {
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-7px);
+      }
+      100% {
+        transform: translateY(0);
+      }
+    }
+
+    /* RESPONSIVE */
+
+    @media (max-width: 960px) {
+      nav {
+        display: none;
+      }
+
+      .hero {
+        grid-template-columns: minmax(0, 1fr);
+        padding-top: 2.4rem;
+      }
+
+      .hero-right {
+        order: -1;
+      }
+
+      .hero-title {
+        font-size: 1.95rem;
+      }
+    }
+
+    @media (max-width: 780px) {
+      .grid-2 {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .steps-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .card {
+        padding: 1.15rem 1.1rem;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .container {
+        width: 100%;
+        padding-inline: 1.1rem;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .btn-primary,
+      .btn-ghost {
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container header-inner">
+      <div class="brand">
+        <div class="brand-logo-wrap floating">
+          <img src="itlalogo.png" alt="Logo ITLA" />
+        </div>
+        <div class="brand-text">
+          <div class="brand-title">ITLA · CIBERSEGURIDAD</div>
+          <div class="brand-subtitle">Proyecto de Video | Introducción a la Ciberseguridad (SDN)</div>
+        </div>
+      </div>
+      <nav>
+        <a href="#video" class="active">
+          <span class="dot"></span>
+          Ver video
+        </a>
+        <a href="#pasos">
+          <span class="dot"></span>
+          Pasos del proyecto
+        </a>
+        <a href="#red-hawk">
+          <span class="dot"></span>
+          RED HAWK &amp; WHOIS
+        </a>
+        <a href="#reflexion">
+          <span class="dot"></span>
+          Conclusión
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="container hero" id="inicio">
+      <div class="hero-left">
+        <div class="eyebrow">
+          <div class="eyebrow-pill">▶</div>
+          <span>Proyecto de Video · Ciberseguridad en acción</span>
+        </div>
+        <h1 class="hero-title">
+          Terminal, reconocimiento y dominios:
+          <span class="accent">un viaje práctico por la ciberseguridad</span>
+        </h1>
+        <p class="hero-subtitle">
+          Esta página resume el proyecto en el que grabé un video demostrando el uso de comandos básicos en Linux, la
+          herramienta <strong>RED HAWK</strong>, la utilidad <strong>WHOIS</strong> y la verificación de dominios en
+          <strong>midominio.do</strong>. Todo desde la mirada de un futuro profesional de ciberseguridad.
+        </p>
+
+        <div class="hero-tag-row">
+          <div class="chip">
+            <span class="chip-dot"></span>
+            <span class="chip-label-muted">Profesor:</span>
+            <span class="chip-label-strong">Gleivis Francisco Ventura Cruz</span>
+          </div>
+          <div class="chip">
+            <span class="chip-label-muted">Asignatura:</span>
+            <span class="chip-label-strong">Introducción a la Ciberseguridad (SDN) Virtual | 2025-C-3</span>
+          </div>
+          <div class="chip">
+            <span class="chip-label-muted">Relacionado con:</span>
+            <span class="chip-label-strong">Sistemas Operativos I</span>
+          </div>
+        </div>
+
+        <div class="hero-actions">
+          <a href="#video" class="btn-primary">
+            <span class="btn-icon-circle">▶</span>
+            Ver el video del proyecto
+          </a>
+          <a href="#pasos" class="btn-ghost">
+            <span class="btn-icon-circle">#</span>
+            Ver pasos y comandos usados
+          </a>
+        </div>
+
+        <div class="hero-meta">
+          <div class="meta-item">
+            <div class="meta-label">Estudiante</div>
+            <div class="meta-value">Ing. John Marcos Pérez Cáceres</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Matrícula</div>
+            <div class="meta-value">20252597</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Correo institucional</div>
+            <div class="meta-value">20252587@itla.edu.do</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-right" id="video">
+        <div class="video-card floating">
+          <div class="video-header">
+            <div class="video-header-left">
+              <div class="video-dots">
+                <span class="video-dot"></span>
+                <span class="video-dot"></span>
+                <span class="video-dot"></span>
+              </div>
+              <span>Vista previa · “Proyecto de Video – Ciberseguridad”</span>
+            </div>
+            <div class="video-badge">
+              <span class="video-badge-icon">⬤</span>
+              <span>El video está aquí</span>
+            </div>
+          </div>
+          <div class="video-body">
+            <div class="video-frame">
+              <!-- VIDEO DEL PROYECTO -->
+              <iframe src="https://drive.google.com/file/d/1f8A7aHOysfHloxuhay5RSq5zTcpHDArh/preview" width="640" height="480" allow="autoplay"></iframe>
+              <div class="video-tag">
+                <span class="video-tag-dot"></span>
+                <span>Grabado en entorno Linux · Terminal real</span>
+              </div>
+            </div>
+          </div>
+          <div class="video-glow"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTRODUCCIÓN -->
+    <section class="container" id="introduccion">
+      <div class="grid-2" data-animate>
+        <div>
+          <div class="section-header">
+            <div class="section-kicker">Introducción</div>
+            <h2 class="section-title">¿De qué trata este proyecto?</h2>
+            <p class="section-subtitle">
+              El objetivo fue grabar un video demostrando, paso a paso, tareas fundamentales para cualquier
+              especialista en ciberseguridad: trabajar en la terminal, instalar y usar herramientas de reconocimiento,
+              consultar información de dominios y revisar opciones de nombres disponibles.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Contexto del trabajo</h3>
+            <p>
+              Este proyecto forma parte de la materia <strong>Introducción a la Ciberseguridad (SDN) Virtual | 2025-C-3</strong>,
+              guiada por el profesor <strong>Gleivis Francisco Ventura Cruz</strong>. A la vez, se apoya en conceptos de
+              <strong>Sistemas Operativos I</strong>, ya que todo se realiza desde la línea de comandos en Linux.
+            </p>
+            <p>
+              En el video muestro cómo:
+            </p>
+            <ul class="list-clean">
+              <li>Creo y edito un archivo de texto usando <code>touch</code> y <code>nano</code>.</li>
+              <li>Instalo y ejecuto la herramienta <strong>RED HAWK</strong> en Kali/Ubuntu.</li>
+              <li>Utilizo <code>whois</code> para consultar información de un dominio.</li>
+              <li>Busco dominios similares disponibles en <strong>midominio.do</strong>.</li>
+            </ul>
+            <div class="intro-highlight">
+              La idea principal es conectar teoría con práctica: no solo hablar de ciberseguridad, sino
+              <strong>mostrarla en acción</strong> desde la terminal y con herramientas reales de reconocimiento.
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <h3>Datos del proyecto</h3>
+            <p>
+              <strong>Nombre del estudiante:</strong><br />
+              Ing. John Marcos Pérez Cáceres
+            </p>
+            <p>
+              <strong>Matrícula:</strong><br />
+              20252597
+            </p>
+            <p>
+              <strong>Correo institucional:</strong><br />
+              20252587@itla.edu.do
+            </p>
+            <p>
+              <strong>Asignatura principal:</strong><br />
+              Introducción a la Ciberseguridad (SDN) Virtual | 2025-C-3
+            </p>
+            <p>
+              <strong>Asignatura relacionada:</strong><br />
+              Sistemas Operativos I
+            </p>
+            <p>
+              <strong>Profesor:</strong><br />
+              Gleivis Francisco Ventura Cruz
+            </p>
+            <p class="intro-highlight">
+              Esta página web fue diseñada y construida por
+              <strong>Ing. John Marcos Pérez Cáceres</strong> como complemento visual y técnico del video.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PASOS DEL PROYECTO -->
+    <section class="container" id="pasos">
+      <div class="section-header" data-animate>
+        <div class="section-kicker">Desarrollo · Paso a paso</div>
+        <h2 class="section-title">Lo que se muestra en el video</h2>
+        <p class="section-subtitle">
+          A continuación, resumo los pasos que sigo en la grabación. Cada uno está apoyado en comandos y herramientas clave
+          en el mundo de la ciberseguridad.
+        </p>
+      </div>
+
+      <div class="steps-grid" data-animate>
+        <!-- PASO 1 -->
+        <article class="step">
+          <div class="step-header">
+            <div class="step-number">1</div>
+            <div>
+              <div class="step-title">Creación y edición del archivo <code>estudiante.txt</code></div>
+              <div class="step-tag">
+                <span class="step-tag-dot"></span>
+                <span>Terminal · Linux</span>
+              </div>
+            </div>
+          </div>
+          <p>
+            En el primer tramo del video trabajo directamente en la terminal. El objetivo es crear un archivo de texto,
+            escribir mis datos y verificar su contenido.
+          </p>
+          <p>Comandos utilizados:</p>
+          <pre><code># Crear el archivo
+touch estudiante.txt
+
+# Editar el archivo con mi nombre completo y matrícula
+nano estudiante.txt
+
+# Verificar el contenido
+cat estudiante.txt</code></pre>
+          <p>
+            Dentro de <code>estudiante.txt</code> agrego información como:
+            <strong>Ing. John Marcos Pérez Cáceres – Matrícula 20252597 – 20252587@itla.edu.do</strong>.
+          </p>
+        </article>
+
+        <!-- PASO 2 -->
+        <article class="step" id="red-hawk">
+          <div class="step-header">
+            <div class="step-number">2</div>
+            <div>
+              <div class="step-title">Instalación y uso de la herramienta RED HAWK</div>
+              <div class="step-tag">
+                <span class="step-tag-dot"></span>
+                <span>OSINT · Reconocimiento web</span>
+              </div>
+            </div>
+          </div>
+          <p>
+            Luego paso a instalar <strong>RED HAWK</strong>, una herramienta de reconocimiento que combina
+            varias funciones para analizar sitios web desde el punto de vista de información pública y posibles vectores.
+          </p>
+          <p>
+            En el video explico brevemente para qué sirve: recopilar datos del servidor, del dominio y de la seguridad
+            básica del sitio, todo orientado al <strong>reconocimiento (reconnaissance)</strong> en ciberseguridad.
+          </p>
+          <p>
+            Después de seleccionar una página web, dentro del menú de RED HAWK ejecuto las opciones
+            <strong>0, 4 y 11</strong>, mostrando en pantalla la salida de cada una y comentando los resultados más relevantes.
+          </p>
+        </article>
+
+        <!-- PASO 3 -->
+        <article class="step" id="whois">
+          <div class="step-header">
+            <div class="step-number">3</div>
+            <div>
+              <div class="step-title">Consulta WHOIS del mismo dominio</div>
+              <div class="step-tag">
+                <span class="step-tag-dot"></span>
+                <span>Información de dominio</span>
+              </div>
+            </div>
+          </div>
+          <p>
+            El siguiente bloque del video está dedicado al comando <code>whois</code>. Utilizo el mismo dominio analizado
+            con RED HAWK para mantener coherencia en la investigación.
+          </p>
+          <p>La idea es identificar las informaciones más importantes, como por ejemplo:</p>
+          <ul class="list-clean">
+            <li>Nombre del dominio y extensión.</li>
+            <li>Organización o entidad responsable.</li>
+            <li>Fechas de creación y expiración.</li>
+            <li>Servidores DNS asociados.</li>
+            <li>Datos públicos del registrante (si están disponibles).</li>
+          </ul>
+          <p>
+            En el video señalo en la terminal cuáles de esas líneas son clave desde el punto de vista de ciberseguridad
+            y gestión de dominios.
+          </p>
+        </article>
+
+        <!-- PASO 4 -->
+        <article class="step" id="dominios">
+          <div class="step-header">
+            <div class="step-number">4</div>
+            <div>
+              <div class="step-title">Búsqueda de dominios similares en midominio.do</div>
+              <div class="step-tag">
+                <span class="step-tag-dot"></span>
+                <span>Gestión de dominios</span>
+              </div>
+            </div>
+          </div>
+          <p>
+            Para cerrar el flujo técnico, utilizo el portal
+            <a href="https://midominio.do/domain-registration/index.php" target="_blank" rel="noopener noreferrer">midominio.do</a>
+            y coloco el dominio que usé en los pasos anteriores.
+          </p>
+          <p>
+            En el video muestro cómo la plataforma sugiere nombres similares y señalo cuáles aparecen como
+            <strong>disponibles</strong> y cuáles no. Esta parte conecta ciberseguridad con
+            <strong>gestión de identidad digital y presencia en línea</strong>.
+          </p>
+          <p>
+            Entender la disponibilidad de dominios ayuda a evaluar riesgos de suplantación, dominios typosquatting y
+            estrategias de protección de marca.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <!-- REFLEXIÓN / CONCLUSIÓN -->
+    <section class="container" id="reflexion">
+      <div class="grid-2" data-animate>
+        <div>
+          <div class="section-header">
+            <div class="section-kicker">Reflexión personal</div>
+            <h2 class="section-title">Lo que aprendí al hacer este proyecto</h2>
+            <p class="section-subtitle">
+              Más que grabar un video, fue una experiencia de práctica real en la terminal y con herramientas que
+              sí se utilizan en ciberseguridad.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Introducción a mis aprendizajes</h3>
+            <p>
+              Antes de empezar, muchas de estas tareas parecían sencillas en teoría, pero diferentes al momento de
+              ejecutarlas frente a la terminal mientras se graba la pantalla. Este proyecto me obligó a
+              <strong>ordenar el flujo de trabajo</strong>, pensar qué quería mostrar y explicar cada paso con claridad.
+            </p>
+            <p>
+              Preparar el video me ayudó a ver la relación entre:
+            </p>
+            <ul class="reflection-list">
+              <li>La administración básica de archivos en Linux.</li>
+              <li>El uso de herramientas de reconocimiento como RED HAWK.</li>
+              <li>La consulta de información de dominios con WHOIS.</li>
+              <li>La verificación de dominios disponibles para proteger la identidad digital.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <h3>Conclusión: cómo me aporta como futuro profesional</h3>
+            <div class="pill-row">
+              <div class="pill"><strong>1.</strong> Perdí el miedo a trabajar “en vivo” en la terminal.</div>
+              <div class="pill"><strong>2.</strong> Entendí mejor el valor del reconocimiento web.</div>
+              <div class="pill"><strong>3.</strong> Conecté dominios, seguridad y marca digital.</div>
+            </div>
+            <p>
+              Al terminar el proyecto, sentí que mi forma de ver la ciberseguridad se volvió más práctica.
+              No se trata solo de conceptos, sino de <strong>secuencias de acciones concretas</strong>:
+              abrir la terminal, lanzar un comando, interpretar la respuesta y decidir qué hacer con esa información.
+            </p>
+            <p>
+              RED HAWK y WHOIS me demostraron que una gran parte del trabajo de ciberseguridad consiste en
+              <strong>hacer las preguntas correctas a los sistemas</strong>: ¿quién es el dueño del dominio?,
+              ¿qué tecnología usa?, ¿qué ventanas de ataque se pueden prever solo con información pública?
+            </p>
+            <p>
+              Finalmente, al revisar dominios similares en <strong>midominio.do</strong> entendí mejor cómo la
+              ciberseguridad se cruza con la gestión de nombres, la reputación en línea y la prevención de posibles
+              intentos de suplantación.
+            </p>
+            <p class="intro-highlight">
+              En resumen, este proyecto me ayudó a reforzar que la terminal no es un “miedo” de Linux, sino una aliada
+              clave para investigar, documentar y proteger sistemas en el mundo real.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CRÉDITO FINAL -->
+    <footer>
+      <div class="container footer-inner">
+        <div>
+          Página web y video realizados por
+          <span class="footer-credit-highlight">Ing. John Marcos Pérez Cáceres</span>
+          como parte de la asignatura
+          <strong>Introducción a la Ciberseguridad (SDN) Virtual | 2025-C-3</strong>.
+        </div>
+        <div class="footer-tag">
+          Diseñada para el profesor <strong>Gleivis Francisco Ventura Cruz</strong> · ITLA
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    // Animaciones suaves al hacer scroll
+    const animated = document.querySelectorAll("[data-animate]");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in-view");
+            observer.unobserve(entry.target);
+          }
+        }
+      },
+      {
+        threshold: 0.18
+      }
+    );
+    animated.forEach((el) => observer.observe(el));
+  </script>
+</body>
+</html>
